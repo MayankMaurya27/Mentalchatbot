@@ -79,8 +79,57 @@ st.set_page_config(
     page_title="MindCare Companion",
     page_icon="💛",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="auto"
 )
+
+# --- SIDEBAR TOGGLE ---
+if "sidebar_state" not in st.session_state:
+    st.session_state.sidebar_state = True   # True = Expanded, False = Collapsed
+
+# Toggle button (three dots icon)
+toggle = st.button("☰", help="Toggle Menu")
+
+if toggle:
+    st.session_state.sidebar_state = not st.session_state.sidebar_state
+
+# Apply CSS based on state
+if st.session_state.sidebar_state:
+    st.markdown("""
+    <style>
+    [data-testid="stSidebar"] {transform: translateX(0); transition: all 0.3s;}
+    </style>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <style>
+    [data-testid="stSidebar"] {transform: translateX(-350px); transition: all 0.3s;}
+    </style>
+    """, unsafe_allow_html=True)
+
+st.markdown("""
+<style>
+button[title="Toggle Menu"] {
+    font-size: 28px !important;      /* Bigger hamburger */
+    font-weight: 700 !important;
+    padding: 10px 18px !important;   /* Comfortable click size */
+    border-radius: 10px !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+    border: 1.5px solid #d4bfff !important;
+    cursor: pointer;
+    position: fixed;                 /* So it stays visible */
+    top: 12px;
+    left: 12px;
+    z-index: 9999;
+}
+
+/* Hover effect */
+button[title="Toggle Menu"]:hover {
+    background: #f0e5ff !important;
+    border-color: #b388ff !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 st.markdown("""
 <style>
