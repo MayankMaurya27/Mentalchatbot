@@ -2,6 +2,73 @@ import streamlit as st
 import pandas as pd
 import datetime
 from groq import Groq
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import bcrypt
+
+
+# Connect to Google Sheet
+scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["service_account"], scope)
+client_gs = gspread.authorize(creds)
+
+sheet = client_gs.open("mindcare_users").sheet1
+
+# ---- ✅ ADD THE TWO FUNCTIONS HERE ----
+
+def register_user(username, email, password):
+    password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    existing_users = sheet.col_values(1)
+    if username in existing_users:
+        return False, "Username already exists."
+    sheet.append_row([username, email, password_hash])
+    return True, "Account created successfully!"
+
+def login_user(username, password):
+    users = sheet.get_all_records()
+    for user in users:
+        if user["username"] == username:
+            if bcrypt.checkpw(password.encode(), user["password_hash"].encode()):
+                return True
+    return False
+
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+auth_choice = st.sidebar.selectbox("Account", ["Login", "Sign Up"])
+
+if not st.session_state.logged_in:
+    if auth_choice == "Login":
+        st.title("Login")
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        if st.button("Login"):
+            if login_user(username, password):
+                st.session_state.logged_in = True
+                st.rerun()
+            else:
+                st.error("Invalid username or password")
+
+    elif auth_choice == "Sign Up":
+        st.title("Create Account")
+        username = st.text_input("Create Username")
+        email = st.text_input("Email")
+        password = st.text_input("Create Password", type="password")
+        if st.button("Sign Up"):
+            ok, msg = register_user(username, email, password)
+            if ok:
+                st.success(msg)
+                st.info("Now go to Login")
+            else:
+                st.error(msg)
+
+    st.stop()
+
+with st.sidebar:
+    if st.button("Logout"):
+        st.session_state.logged_in = False
+        st.rerun()
+
 
 # ---------- LOAD API KEY ----------
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
