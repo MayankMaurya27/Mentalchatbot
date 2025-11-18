@@ -30,18 +30,6 @@ Audio Processing: Web Speech API / Speech-to-Text
 
 Hosting: Netlify / Render / Streamlit / etc.
 
-Project Structure
-
-/
-├── frontend/
-│   ├── index.html
-│   ├── script.js
-│   └── styles.css
-├── backend/
-│   ├── app.py
-│   └── api_handlers.py
-└── README.md
-
 📝 How It Works
 
 User speaks into the mic.
