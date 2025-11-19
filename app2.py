@@ -35,39 +35,8 @@ def login_user(username, password):
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-auth_choice = st.sidebar.selectbox("Account", ["Login", "Sign Up"])
 
-if not st.session_state.logged_in:
-    if auth_choice == "Login":
-        st.title("Login")
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        if st.button("Login"):
-            if login_user(username, password):
-                st.session_state.logged_in = True
-                st.rerun()
-            else:
-                st.error("Invalid username or password")
 
-    elif auth_choice == "Sign Up":
-        st.title("Create Account")
-        username = st.text_input("Create Username")
-        email = st.text_input("Email")
-        password = st.text_input("Create Password", type="password")
-        if st.button("Sign Up"):
-            ok, msg = register_user(username, email, password)
-            if ok:
-                st.success(msg)
-                st.info("Now go to Login")
-            else:
-                st.error(msg)
-
-    st.stop()
-
-with st.sidebar:
-    if st.button("Logout"):
-        st.session_state.logged_in = False
-        st.rerun()
 
 
 # ---------- LOAD API KEY ----------
@@ -148,6 +117,70 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="auto"
 )
+
+st.markdown("""
+<style>
+[data-testid="stSidebar"] {
+    min-width: 350px !important;
+    max-width: 350px !important;
+    background: rgba(255, 255, 255, 0.25) !important;
+    backdrop-filter: blur(12px) !important;
+    border-right: 2px solid rgba(255,255,255,0.3);
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+# Default states
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = None
+
+# ----------------------------
+#  SIDEBAR ACCOUNT SECTION
+# ----------------------------
+with st.sidebar:
+    st.title("Account")
+
+    if st.session_state.logged_in:
+        st.success(f"Logged in as {st.session_state.username}")
+
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.session_state.username = None
+            st.rerun()
+
+    else:
+        account_action = st.selectbox("Choose", ["Continue as Guest", "Login", "Sign Up"])
+
+        if account_action == "Login":
+            st.subheader("Login")
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+
+            if st.button("Login"):
+                if login_user(username, password):
+                    st.session_state.logged_in = True
+                    st.session_state.username = username
+                    st.success("Logged in successfully!")
+                    st.rerun()
+                else:
+                    st.error("Invalid login!")
+
+        elif account_action == "Sign Up":
+            st.subheader("Create Account")
+            username = st.text_input("Create Username")
+            email = st.text_input("Email")
+            password = st.text_input("Password", type="password")
+
+            if st.button("Sign Up"):
+                ok, msg = register_user(username, email, password)
+                if ok:
+                    st.success(msg)
+                else:
+                    st.error(msg)
+
 
 # --- SIDEBAR TOGGLE ---
 if "sidebar_state" not in st.session_state:
